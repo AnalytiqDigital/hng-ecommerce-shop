@@ -15,6 +15,9 @@ export function getDb() {
   }
   const client = globalForDb.postgresClient ??= postgres(connectionString, {
     max: 1,
+    idle_timeout: 20,
+    max_lifetime: 60 * 5,
+    connect_timeout: 10,
     prepare: false,
     ssl: "require",
   });
