@@ -1,4 +1,3 @@
-```ts
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -18,7 +17,7 @@ export async function GET(request: Request) {
     console.log("[AUTH CALLBACK] No OAuth code received");
 
     return NextResponse.redirect(
-      new URL("/login?error=oauth", url.origin),
+      new URL("/login?error=oauth", url.origin)
     );
   }
 
@@ -35,17 +34,15 @@ export async function GET(request: Request) {
     if (error) {
       console.error(
         "[AUTH CALLBACK] OAuth exchange error:",
-        error.message,
+        error.message
       );
 
       return NextResponse.redirect(
-        new URL("/login?error=oauth", url.origin),
+        new URL("/login?error=oauth", url.origin)
       );
     }
 
-    console.log(
-      "[AUTH CALLBACK] Session exchange successful",
-    );
+    console.log("[AUTH CALLBACK] Session exchange successful");
 
     const {
       data: { user },
@@ -53,30 +50,29 @@ export async function GET(request: Request) {
 
     console.log(
       "[AUTH CALLBACK] User:",
-      user?.email ?? "NO USER",
+      user?.email ?? "NO USER"
     );
 
     console.log(
-      "[AUTH CALLBACK] Profile database write SKIPPED",
+      "[AUTH CALLBACK] Profile database write SKIPPED"
     );
 
     console.log(
       "[AUTH CALLBACK] Redirecting to:",
-      destination,
+      destination
     );
 
     return NextResponse.redirect(
-      new URL(destination, url.origin),
+      new URL(destination, url.origin)
     );
   } catch (error) {
     console.error(
       "[AUTH CALLBACK] Unexpected error:",
-      error instanceof Error ? error.message : error,
+      error instanceof Error ? error.message : error
     );
 
     return NextResponse.redirect(
-      new URL("/login?error=oauth", url.origin),
+      new URL("/login?error=oauth", url.origin)
     );
   }
 }
-```
