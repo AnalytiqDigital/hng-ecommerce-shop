@@ -1,0 +1,9 @@
+import { desc } from "drizzle-orm";
+import { OrderStatusSelect } from "@/components/admin/order-status-select";
+import { getDb } from "@/lib/db";
+import { orders } from "@/lib/db/schema";
+
+export default async function AdminOrdersPage() {
+  const items = await getDb().select().from(orders).orderBy(desc(orders.createdAt)).limit(200);
+  return <><p className="text-[10px] uppercase tracking-[0.18em] text-clay">Fulfilment</p><h1 className="mt-2 font-display text-[38px]">Orders</h1><p className="mt-2 text-[12px] text-muted">Payment state is verified by Paystack; order status changes are audited.</p><div className="mt-8 overflow-x-auto border-t border-line"><table className="w-full min-w-[740px] text-left text-[11px]"><thead><tr className="text-muted"><th className="py-3 font-normal">Order</th><th className="font-normal">Customer</th><th className="font-normal">Date</th><th className="font-normal">Total</th><th className="font-normal">Payment</th><th className="font-normal">Fulfilment</th></tr></thead><tbody>{items.map((order) => <tr key={order.id} className="border-t border-line"><td className="py-4 font-medium">{order.orderNumber}</td><td>{order.customerName}<span className="mt-1 block text-[10px] text-muted">{order.customerEmail}</span></td><td>{new Intl.DateTimeFormat("en-NG", { dateStyle: "medium" }).format(order.createdAt)}</td><td>{new Intl.NumberFormat("en-NG", { style: "currency", currency: order.currency, maximumFractionDigits: 0 }).format(order.totalCents / 100)}</td><td className="capitalize">{order.paymentStatus}</td><td><OrderStatusSelect id={order.id} status={order.status} /></td></tr>)}</tbody></table>{items.length === 0 && <p className="py-10 text-center text-[12px] text-muted">No orders yet.</p>}</div></>;
+}
