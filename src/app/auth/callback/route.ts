@@ -30,29 +30,29 @@ export async function GET(request: Request) {
 
       console.log("[AUTH CALLBACK] User:", user?.email ?? "NO USER");
 
-      if (user?.email && process.env.DATABASE_URL) {
-        console.log("[AUTH CALLBACK] Starting profile database write");
+     if (false) {
+  console.log("[AUTH CALLBACK] Starting profile database write");
 
-        await getDb()
-          .insert(profiles)
-          .values({
-            id: user.id,
-            email: user.email,
-            fullName:
-              user.user_metadata.full_name ??
-              user.user_metadata.name ??
-              null,
-          })
-          .onConflictDoUpdate({
-            target: profiles.id,
-            set: {
-              email: user.email,
-              updatedAt: new Date(),
-            },
-          });
+  await getDb()
+    .insert(profiles)
+    .values({
+      id: user.id,
+      email: user.email,
+      fullName:
+        user.user_metadata.full_name ??
+        user.user_metadata.name ??
+        null,
+    })
+    .onConflictDoUpdate({
+      target: profiles.id,
+      set: {
+        email: user.email,
+        updatedAt: new Date(),
+      },
+    });
 
-        console.log("[AUTH CALLBACK] Profile database write successful");
-      }
+  console.log("[AUTH CALLBACK] Profile database write successful");
+}
 
       console.log("[AUTH CALLBACK] Redirecting to:", destination);
 
