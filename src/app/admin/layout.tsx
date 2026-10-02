@@ -11,26 +11,56 @@ export default async function AdminLayout({
   children,
 }: LayoutProps<"/admin">) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/admin");
-  if (!process.env.DATABASE_URL) redirect("/");
+
+  console.log("[ADMIN DEBUG] User:", user?.email);
+  console.log("[ADMIN DEBUG] User ID:", user?.id);
+
+  if (!user) {
+    console.log("[ADMIN DEBUG] No authenticated user");
+    redirect("/login?next=/admin");
+  }
+
+  if (!process.env.DATABASE_URL) {
+    console.log("[ADMIN DEBUG] DATABASE_URL missing");
+    redirect("/");
+  }
 
   const [admin] = await getDb()
     .select({ userId: adminUsers.userId })
     .from(adminUsers)
     .where(eq(adminUsers.userId, user.id))
     .limit(1);
-  if (!admin) redirect("/");
+
+  console.log("[ADMIN DEBUG] Admin record:", admin);
+
+  if (!admin) {
+    console.log("[ADMIN DEBUG] ADMIN RECORD NOT FOUND");
+    redirect("/");
+  }
 
   return (
     <div className="min-h-screen bg-[#f1f2ed]">
       <header className="border-b border-line bg-paper">
         <div className="mx-auto flex h-[68px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
-          <Link href="/admin" className="font-display text-[22px]">
-            Form &amp; Field <span className="font-sans text-[10px] uppercase tracking-[0.15em] text-muted">/ Studio</span>
+          <Link
+            href="/admin"
+            className="font-display text-[22px]"
+          >
+            Form &amp; Field{" "}
+            <span className="font-sans text-[10px] uppercase tracking-[0.15em] text-muted">
+              / Studio
+            </span>
           </Link>
-          <Link href="/" className="text-[10px] uppercase tracking-[0.13em]">View shop ↗</Link>
+
+          <Link
+            href="/"
+            className="text-[10px] uppercase tracking-[0.13em]"
+          >
+            View shop ↗
+          </Link>
         </div>
       </header>
+
       <div className="mx-auto grid max-w-[1440px] lg:grid-cols-[210px_1fr]">
         <nav className="flex gap-5 overflow-x-auto border-b border-line px-5 py-4 text-[11px] lg:min-h-[calc(100vh-68px)] lg:flex-col lg:border-b-0 lg:border-r lg:px-7 lg:py-8">
           <Link href="/admin">Overview</Link>
@@ -40,7 +70,10 @@ export default async function AdminLayout({
           <Link href="/admin/orders">Orders</Link>
           <Link href="/admin/customers">Customers</Link>
         </nav>
-        <div className="min-w-0 px-5 py-8 sm:px-8 lg:px-12 lg:py-10">{children}</div>
+
+        <div className="min-w-0 px-5 py-8 sm:px-8 lg:px-12 lg:py-10">
+          {children}
+        </div>
       </div>
     </div>
   );

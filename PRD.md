@@ -6,9 +6,9 @@ Form & Field is an online shop for considered home, clothing, lighting, and ever
 
 ## Users
 
-- Shoppers browsing or purchasing as guests.
-- Signed-in customers who need persistent order history.
-- Store administrators who manage products, categories, orders, and storefront settings.
+* Shoppers browsing or purchasing as guests.
+* Signed-in customers who need persistent order history.
+* Store administrators who manage products, categories, orders, and storefront settings.
 
 ## MVP Requirements
 
@@ -19,29 +19,29 @@ Form & Field is an online shop for considered home, clothing, lighting, and ever
 5. Support Google sign-in/out through Supabase Auth and associate customer orders with the authenticated user when available.
 6. Show customers only their own persisted order history.
 7. Restrict admin pages and write APIs to provisioned admin users.
-8. Send and log order-confirmation email through Mailgun after successful payment.
+8. Send order-confirmation notifications after successful payment through a configured transactional email service.
 9. Support Vercel deployment with production-only service configuration and no credentials in Git.
 
 ## Acceptance Checklist
 
-| Checklist item | Status | Evidence or remaining action |
-| --- | --- | --- |
-| Shop concept and PRD | Done | This document describes the MVP and acceptance criteria. |
-| Product UI | Done | Storefront, product detail, filtering, and variants are implemented. |
-| Cart | Done | Cart calculations and variant stock checks have unit tests; browser persistence is implemented. |
-| Checkout | Partial | Server creates persisted orders and starts Paystack checkout; live payment is not exercised by the smoke test. |
-| Supabase/Neon | Done | Supabase PostgreSQL/Auth are implemented; local configured database has all four migrations. |
-| Orders persisted | Done | Checkout writes order, item, and payment records transactionally. |
-| Google OAuth | Partial | OAuth routes/configuration are implemented; complete production sign-in requires provider configuration and a real browser session. |
-| Sign in/out | Done | Supabase login, callback, and sign-out flows are implemented. |
-| Mailgun | Partial | Sender integration and delivery logging are implemented; production credentials/domain are not verifiable from the repository. |
-| Confirmation email received | Blocked | Must send a real successful test order and verify delivery in a mailbox/Mailgun logs. |
-| Order history survives logout/re-entry | Done | Orders are queried by Supabase user ID from PostgreSQL, not browser storage. |
-| Production deployment | Partial | Vercel deployment is live. Homepage, catalog API, and settings responded, but the production product-detail request exceeded the 15-second smoke deadline; deploy the query memoization change and rerun. |
-| Production environment variables | Partial | Database-backed production endpoints responded; Paystack/Mailgun values and Vercel secret settings need owner verification. |
-| End-to-end testing | Partial | `npm run test:smoke` passes locally for five read-only routes. Production product detail needs retesting after deploy; OAuth, payment, email receipt, and customer history need a controlled real-account test. |
-| Git history | Done | Changes are versioned on `master`. |
-| No secrets in GitHub | Done with caveat | `.env.local` is ignored and `.env.example` is the only tracked env file; run GitHub secret scanning on the remote repository as a final check. |
+| Checklist item                         | Status           | Evidence or remaining action                                                                                                                                                                                        |
+| -------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shop concept and PRD                   | Done             | This document describes the MVP and acceptance criteria.                                                                                                                                                            |
+| Product UI                             | Done             | Storefront, product detail, filtering, and variants are implemented.                                                                                                                                                |
+| Cart                                   | Done             | Cart calculations and variant stock checks have unit tests; browser persistence is implemented.                                                                                                                     |
+| Checkout                               | Partial          | Server creates persisted orders and starts Paystack checkout; live payment is not exercised by the smoke test.                                                                                                      |
+| Supabase/Neon                          | Done             | Supabase PostgreSQL/Auth are implemented; local configured database has all four migrations.                                                                                                                        |
+| Orders persisted                       | Done             | Checkout writes order, item, and payment records transactionally.                                                                                                                                                   |
+| Google OAuth                           | Partial          | OAuth routes/configuration are implemented; complete production sign-in requires provider configuration and a real browser session.                                                                                 |
+| Sign in/out                            | Done             | Supabase login, callback, and sign-out flows are implemented.                                                                                                                                                       |
+| Email notifications                    | Partial          | Previous Mailgun integration has been removed. A replacement transactional email provider still needs to be configured and tested.                                                                                  |
+| Confirmation email received            | Blocked          | Requires a successful test order and verification that the configured email provider delivers the notification to a real mailbox.                                                                                   |
+| Order history survives logout/re-entry | Done             | Orders are queried by Supabase user ID from PostgreSQL, not browser storage.                                                                                                                                        |
+| Production deployment                  | Partial          | Vercel deployment is live. Homepage, catalog API, and settings responded, but the production product-detail request exceeded the 15-second smoke deadline; deploy the query memoization change and rerun.           |
+| Production environment variables       | Partial          | Database-backed production endpoints responded; Paystack and email-provider values and Vercel secret settings need owner verification.                                                                              |
+| End-to-end testing                     | Partial          | `npm run test:smoke` passes locally for five read-only routes. Production product detail needs retesting after deploy; OAuth, payment, email notification, and customer history need controlled real-account tests. |
+| Git history                            | Done             | Changes are versioned on `master`.                                                                                                                                                                                  |
+| No secrets in GitHub                   | Done with caveat | `.env.local` is ignored and `.env.example` is the only tracked env file; run GitHub secret scanning on the remote repository as a final check.                                                                      |
 
 ## Production Smoke Test Scope
 
