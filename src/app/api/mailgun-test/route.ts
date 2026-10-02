@@ -1,29 +1,50 @@
 import { NextResponse } from "next/server";
-import { sendOrderConfirmationEmail } from "@/lib/mailgun";
 
 export async function GET() {
+  const key = process.env.MAILGUN_API_KEY;
+  const domain = process.env.MAILGUN_DOMAIN;
+  const from = process.env.MAILGUN_FROM_EMAIL;
   const recipient = process.env.ADMIN_EMAIL;
 
-  if (!recipient) {
+  if (!key || !domain || !from || !recipient) {
     return NextResponse.json(
-      { error: "ADMIN_EMAIL is not configured" },
+      {
+        configured: {
+          key: !!key,
+          domain: !!domain,
+          from: !!from,
+          recipient: !!recipient,
+        },
+      },
       { status: 500 }
     );
   }
 
-  const result = await sendOrderConfirmationEmail({
-    orderNumber: "MAILGUN-TEST-001",
-    recipient,
-    customerName: "Test Customer",
-    totalCents: 150000,
-    items: [
-      {
-        name: "Test Product",
-        quantity: 2,
-        unitPriceCents: 75000,
-      },
-    ],
-  });
+  const form = new FormData();
+  form.set("from", from);
+  form.set("to", recipient);
+  form.set("subject", "HNG Mailgun Test");
+  form.set(
+    "text",
+    "This is a test email from the HNG E-Commerce application."
+  );
 
-  return NextResponse.json(result);
+  const response = await fetch(
+    `https://api.mailgun.net/v3/${encodeURIComponent(domain)}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${Buffer.from(`api:${key}`).toString("base64")}`,
+      },
+      body: form,
+    }
+  );
+
+  const body = await response.text();
+
+  return NextResponse.json({
+    status: response.status,
+    ok: response.ok,
+    mailgunResponse: body,
+  });
 }
