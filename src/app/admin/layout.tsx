@@ -11,9 +11,19 @@ export default async function AdminLayout({
   children,
 }: LayoutProps<"/admin">) {
   console.log("[ADMIN] 1. Layout started");
+console.log("[ADMIN] 2. Getting current user");
 
-  console.log("[ADMIN] 2. Getting current user");
-  const user = await getCurrentUser();
+const user = await Promise.race([
+  getCurrentUser(),
+  new Promise<null>((resolve) =>
+    setTimeout(() => {
+      console.log("[ADMIN] AUTH TIMEOUT");
+      resolve(null);
+    }, 12_000)
+  ),
+]);
+
+console.log("[ADMIN] 2b. getCurrentUser finished");
 
   console.log(
     "[ADMIN] 3. Current user:",
