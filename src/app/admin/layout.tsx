@@ -10,6 +10,24 @@ export const dynamic = "force-dynamic";
 export default async function AdminLayout({
   children,
 }: LayoutProps<"/admin">) {
+  console.log("[ADMIN TEST] 1. Layout started");
+
+  console.log("[ADMIN TEST] 2. Before getCurrentUser");
+
+  const user = await getCurrentUser();
+
+  console.log("[ADMIN TEST] 3. After getCurrentUser", user?.email ?? "NO USER");
+
+  return (
+    <div>
+      {children}
+    </div>
+  );
+}
+
+export default async function AdminLayout({
+  children,
+}: LayoutProps<"/admin">) {
   console.log("[ADMIN] 1. Layout started");
 console.log("[ADMIN] 2. Getting current user");
 
