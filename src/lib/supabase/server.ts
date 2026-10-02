@@ -23,14 +23,39 @@ export async function createSupabaseServerClient() {
     },
   });
 }
-
 export async function getCurrentUser() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
+  console.log("[AUTH] 1. getCurrentUser started");
+
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.log("[AUTH] 2. Supabase environment variables missing");
+    return null;
+  }
+
   try {
+    console.log("[AUTH] 3. Creating Supabase server client");
+
     const supabase = await createSupabaseServerClient();
-    const { data: { user } } = await supabase.auth.getUser();
+
+    console.log("[AUTH] 4. Calling supabase.auth.getUser()");
+
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    console.log(
+      "[AUTH] 5. getUser completed:",
+      user?.email ?? "NO USER",
+      error?.message ?? "NO ERROR"
+    );
+
     return user;
-  } catch {
+  } catch (error) {
+    console.error(
+      "[AUTH] ERROR:",
+      error instanceof Error ? error.message : error
+    );
+
     return null;
   }
 }
