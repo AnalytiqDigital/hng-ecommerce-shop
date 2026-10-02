@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test src/lib/cart.test.ts src/lib/paystack.test.ts src/lib/store-settings.test.ts src/lib/whatsapp.test.ts src/lib/product-variants.test.ts",
+    "test:smoke": "node scripts/smoke-production.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx scripts/seed.ts",

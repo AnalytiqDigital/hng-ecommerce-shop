@@ -1,5 +1,6 @@
 import "server-only";
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { cache } from "react";
 import { getDb } from "@/lib/db";
 import { categories, productVariants, products } from "@/lib/db/schema";
 import { distributeVariantStock, getProductColors } from "@/lib/product-variants";
@@ -95,7 +96,7 @@ export async function getProducts(category?: string): Promise<CatalogProduct[]> 
   return visibleRows.map((product) => ({ ...product, category: product.category ?? "Objects", description: product.description ?? "Thoughtfully made for everyday use.", variants: variantsByProduct.get(product.id) ?? [] }));
 }
 
-export async function getProductBySlug(slug: string): Promise<CatalogProduct | undefined> {
+async function loadProductBySlug(slug: string): Promise<CatalogProduct | undefined> {
   if (!process.env.DATABASE_URL) return demoProducts.find((product) => product.slug === slug);
   const db = getDb();
   const [product] = await db.select({
@@ -134,3 +135,5 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | u
     variants,
   };
 }
+
+export const getProductBySlug = cache(loadProductBySlug);

@@ -1,5 +1,7 @@
 # Form & Field
 
+See [PRD.md](PRD.md) for product requirements and the current completion checklist.
+
 A full-stack storefront foundation built with Next.js, TypeScript, Tailwind CSS, Supabase PostgreSQL, Drizzle ORM, Paystack, and Mailgun. The first implementation includes the responsive storefront, searchable/filterable catalog, product pages, browser-persistent guest cart, product API, relational schema, migrations, and repeatable catalog seed data.
 
 The storefront uses explicitly demo-only catalog data when `DATABASE_URL` is not set. Once a database URL is configured, product reads use PostgreSQL and database errors are surfaced instead of silently switching to demo content. Products support color variants with their own SKU and stock; chosen colors stay distinct in the cart/order, and verified payments reduce stock for that color. Working integration slices include Google sign-in through Supabase Auth, customer order views, guarded admin product/category/order APIs, Paystack transaction initialization and signature-verified webhook processing, order email delivery through Mailgun, Supabase Storage image uploads, newsletter persistence, the content/store editor at `/admin/content`, and a sitewide WhatsApp launcher. The editor manages storefront name/logo, homepage sections and images, contact details, WhatsApp business number, currency, shipping fee, and free-shipping threshold. These live flows require the corresponding credentials and migrated/seeded database.
@@ -168,6 +170,7 @@ For a new release, push to GitHub and let Vercel build/deploy. For schema change
 - `npm run start` serves the production build.
 - `npm run lint` runs ESLint.
 - `npm test` runs cart calculation and stock validation tests.
+- `npm run test:smoke` checks production routes without creating an order or charging a payment. Set `SMOKE_BASE_URL` to target another deployment.
 - `npm run db:generate` creates Drizzle migrations from the schema.
 - `npm run db:migrate` applies generated migrations.
 - `npm run db:seed` inserts five categories and fifteen demo products without overwriting existing slugs.
