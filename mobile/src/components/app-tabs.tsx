@@ -27,6 +27,8 @@ export default function AppTabs() {
       <Tabs.Screen name="shop" options={{ title: "Shop" }} />
       <Tabs.Screen name="cart" options={{ title: "Cart" }} />
       <Tabs.Screen name="account" options={{ title: "Account" }} />
+      <Tabs.Screen name="checkout" options={{ href: null }} />
+      <Tabs.Screen name="payment-return" options={{ href: null }} />
     </Tabs>
   );
 }

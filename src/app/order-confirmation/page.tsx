@@ -11,9 +11,33 @@ type PaymentState = { orderNumber?: string; status?: string; paymentStatus?: str
 function ConfirmationContent() {
   const search = useSearchParams();
   const reference = search.get("reference") ?? "";
+  const mobileReturn = search.get("platform") === "mobile";
+  const requestedReturnUrl = search.get("returnUrl");
   const [state, setState] = useState<PaymentState>({});
   const [attempt, setAttempt] = useState(0);
   const { clear, hydrated } = useCart();
+
+  useEffect(() => {
+    if (!mobileReturn || !reference || !hydrated || (state.paymentStatus !== "paid" && state.paymentStatus !== "failed")) return;
+    let returnUrl: URL;
+    try {
+      returnUrl = new URL(requestedReturnUrl ?? "mobile://payment-return");
+    } catch {
+      returnUrl = new URL("mobile://payment-return");
+    }
+    const nativeAppRoute =
+      returnUrl.protocol === "mobile:" &&
+      returnUrl.hostname === "payment-return" &&
+      (returnUrl.pathname === "" || returnUrl.pathname === "/");
+    const expoGoRoute =
+      returnUrl.protocol === "exp:" &&
+      /^\/(?:--\/)?payment-return\/?$/.test(returnUrl.pathname);
+    if (!nativeAppRoute && !expoGoRoute) {
+      returnUrl = new URL("mobile://payment-return");
+    }
+    returnUrl.searchParams.set("reference", reference);
+    window.location.replace(returnUrl.toString());
+  }, [mobileReturn, reference, requestedReturnUrl, hydrated, state.paymentStatus]);
 
   useEffect(() => {
     if (!reference || !hydrated || attempt >= 40 || state.paymentStatus === "paid") return;

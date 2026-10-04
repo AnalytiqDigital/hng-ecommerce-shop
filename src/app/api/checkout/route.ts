@@ -7,10 +7,24 @@ import { getCurrentUser } from "@/lib/supabase/server";
 import { orderItems, orders, payments, productVariants, products } from "@/lib/db/schema";
 import { getStoreSettings } from "@/lib/store-settings.server";
 
+const mobileReturnUrlSchema = z.string().url().refine((value) => {
+  const returnUrl = new URL(value);
+  const nativeAppRoute =
+    returnUrl.protocol === "mobile:" &&
+    returnUrl.hostname === "payment-return" &&
+    (returnUrl.pathname === "" || returnUrl.pathname === "/");
+  const expoGoRoute =
+    returnUrl.protocol === "exp:" &&
+    /^\/(?:--\/)?payment-return\/?$/.test(returnUrl.pathname);
+  return nativeAppRoute || expoGoRoute;
+});
+
 const checkoutSchema = z.object({
   customer: z.object({ fullName: z.string().trim().min(2).max(120), email: z.email(), phone: z.string().trim().min(7).max(30) }),
   shippingAddress: z.object({ addressLine1: z.string().trim().min(3).max(180), addressLine2: z.string().trim().max(180).optional().nullable(), city: z.string().trim().min(2).max(100), state: z.string().trim().min(2).max(100), country: z.string().trim().min(2).max(100), postalCode: z.string().trim().max(24).optional().nullable() }),
   items: z.array(z.object({ productId: z.string().uuid(), variantId: z.string().uuid().optional(), quantity: z.number().int().min(1).max(20) })).min(1).max(30),
+  platform: z.enum(["web", "mobile"]).optional(),
+  mobileReturnUrl: mobileReturnUrlSchema.optional(),
 });
 
 export async function POST(request: Request) {
@@ -90,10 +104,19 @@ export async function POST(request: Request) {
     });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+    const callbackUrl = new URL("/order-confirmation", siteUrl);
+    callbackUrl.searchParams.set("reference", reference);
+    if (parsed.data.platform === "mobile") {
+      callbackUrl.searchParams.set("platform", "mobile");
+      callbackUrl.searchParams.set(
+        "returnUrl",
+        parsed.data.mobileReturnUrl ?? "mobile://payment-return"
+      );
+    }
     const response = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ email: parsed.data.customer.email, amount: order.totalCents, currency: storeSettings.currency, reference, callback_url: `${siteUrl}/order-confirmation?reference=${encodeURIComponent(reference)}`, metadata: { orderNumber: order.orderNumber } }),
+      body: JSON.stringify({ email: parsed.data.customer.email, amount: order.totalCents, currency: storeSettings.currency, reference, callback_url: callbackUrl.toString(), metadata: { orderNumber: order.orderNumber } }),
     });
     const result = await response.json() as { status?: boolean; message?: string; data?: { authorization_url?: string } };
     if (!response.ok || !result.status || !result.data?.authorization_url) {

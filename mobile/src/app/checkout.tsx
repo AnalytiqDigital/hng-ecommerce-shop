@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
 
 import { getCart, getCartSubtotal, type CartItem } from "@/lib/cart";
 
@@ -76,6 +77,31 @@ export default function CheckoutScreen() {
     setError("");
 
     try {
+      const redirectUrl = Linking.createURL("payment-return");
+      const legacyVariantItems = items.filter(
+        (item) => !item.variantId && item.variantName
+      );
+      let productsById = new Map<
+        string,
+        { variants?: Array<{ id: string; name: string }> }
+      >();
+
+      if (legacyVariantItems.length > 0) {
+        const productsResponse = await fetch(`${API_BASE_URL}/api/products`, {
+          headers: { Accept: "application/json" },
+        });
+        const productsData = (await productsResponse.json()) as {
+          products?: Array<{ id: string; variants?: Array<{ id: string; name: string }> }>;
+          error?: string;
+        };
+        if (!productsResponse.ok) {
+          throw new Error(productsData.error || "Unable to refresh product options.");
+        }
+        productsById = new Map(
+          (productsData.products ?? []).map((product) => [product.id, product])
+        );
+      }
+
       const payload = {
         customer: {
           fullName: form.fullName.trim(),
@@ -90,10 +116,29 @@ export default function CheckoutScreen() {
           country: form.country.trim(),
           postalCode: form.postalCode.trim() || null,
         },
-        items: items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
+        items: items.map((item) => {
+          const matchingVariant = item.variantId
+            ? undefined
+            : productsById
+                .get(item.productId)
+                ?.variants?.find((variant) => variant.name === item.variantName);
+          const productHasVariants =
+            (productsById.get(item.productId)?.variants?.length ?? 0) > 0;
+          if (!item.variantId && item.variantName && productHasVariants && !matchingVariant) {
+            throw new Error(
+              `${item.name}'s selected option is no longer available. Remove it and add the product again.`
+            );
+          }
+          return {
+            productId: item.productId,
+            ...(item.variantId || matchingVariant?.id
+              ? { variantId: item.variantId ?? matchingVariant?.id }
+              : {}),
+            quantity: item.quantity,
+          };
+        }),
+        platform: "mobile",
+        mobileReturnUrl: redirectUrl,
       };
 
       const response = await fetch(`${API_BASE_URL}/api/checkout`, {
@@ -115,13 +160,26 @@ export default function CheckoutScreen() {
         throw new Error(data.error || "Unable to start checkout.");
       }
 
-      await Linking.openURL(data.authorizationUrl);
-      Alert.alert(
-        "Checkout started",
-        data.orderNumber
-          ? `Your order ${data.orderNumber} is ready for payment.`
-          : "Please complete your payment in the browser."
+      const result = await WebBrowser.openAuthSessionAsync(
+        data.authorizationUrl,
+        redirectUrl
       );
+      if (result.type === "success" && result.url) {
+        const returnedReference = Linking.parse(result.url).queryParams?.reference;
+        const reference = Array.isArray(returnedReference)
+          ? returnedReference[0]
+          : returnedReference;
+        if (reference) {
+          router.replace({
+            pathname: "/payment-return",
+            params: { reference },
+          });
+        } else {
+          setError("We returned from payment without a reference. Please check your order status.");
+        }
+      } else if (result.type === "cancel" || result.type === "dismiss") {
+        setError("Payment was not completed. Your cart is still saved; you can try again.");
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to start checkout.");
     } finally {

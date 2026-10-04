@@ -60,6 +60,7 @@ export default function ShopScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const categories = useMemo(() => {
     const unique = new Set(products.map((product) => product.category));
@@ -116,16 +117,12 @@ export default function ShopScreen() {
   }
 
   async function handleAddToCart(product: Product) {
-    const variant = product.variants[0] ?? {
-      id: product.id,
-      name: "Default",
-      colorHex: "#111827",
-      sku: product.slug,
-      stockQuantity: product.stockQuantity,
-      imageUrl: product.imageUrl,
-    };
+    const variant = product.variants.find(
+      (candidate) => candidate.id === selectedVariants[product.id]
+    ) ?? product.variants[0];
+    const availableStock = variant?.stockQuantity ?? product.stockQuantity;
 
-    if (product.stockQuantity <= 0 && variant.stockQuantity <= 0) {
+    if (availableStock <= 0) {
       Alert.alert("Out of stock", "This product is not available right now.");
       return;
     }
@@ -134,10 +131,11 @@ export default function ShopScreen() {
       productId: product.id,
       name: product.name,
       priceCents: product.priceCents,
-      imageUrl: variant.imageUrl || product.imageUrl,
+      imageUrl: variant?.imageUrl || product.imageUrl,
       quantity: 1,
-      variantName: variant.name,
-      colorHex: variant.colorHex,
+      variantId: variant?.id,
+      variantName: variant?.name,
+      colorHex: variant?.colorHex,
     });
 
     Alert.alert("Added to cart", `${product.name} was added to your cart.`);
@@ -233,22 +231,68 @@ export default function ShopScreen() {
                   )}
                 </View>
 
-                <Text style={styles.stock}>
-                  {product.stockQuantity > 0 ? `${product.stockQuantity} in stock` : "Out of stock"}
-                </Text>
+                {(() => {
+                  const selectedVariant = product.variants.find(
+                    (variant) => variant.id === selectedVariants[product.id]
+                  ) ?? product.variants[0];
+                  const stockQuantity = selectedVariant?.stockQuantity ?? product.stockQuantity;
+                  return (
+                    <Text style={styles.stock}>
+                      {stockQuantity > 0 ? `${stockQuantity} in stock` : "Out of stock"}
+                    </Text>
+                  );
+                })()}
 
                 {product.featured && <Text style={styles.featured}>FEATURED</Text>}
 
                 <View style={styles.variantRow}>
-                  {(product.variants ?? []).slice(0, 4).map((variant) => (
-                    <View
+                  {(product.variants ?? []).map((variant) => (
+                    <TouchableOpacity
                       key={variant.id}
-                      style={[styles.swatch, { backgroundColor: variant.colorHex || "#111827" }]}
+                      accessibilityRole="radio"
+                      accessibilityLabel={`Choose ${variant.name}`}
+                      accessibilityState={{
+                        selected:
+                          (selectedVariants[product.id] ?? product.variants[0]?.id) === variant.id,
+                        disabled: variant.stockQuantity <= 0,
+                      }}
+                      disabled={variant.stockQuantity <= 0}
+                      onPress={() =>
+                        setSelectedVariants((current) => ({
+                          ...current,
+                          [product.id]: variant.id,
+                        }))
+                      }
+                      style={[
+                        styles.swatch,
+                        { backgroundColor: variant.colorHex || "#111827" },
+                        (selectedVariants[product.id] ?? product.variants[0]?.id) === variant.id &&
+                          styles.swatchSelected,
+                        variant.stockQuantity <= 0 && styles.swatchDisabled,
+                      ]}
                     />
                   ))}
                 </View>
+                {product.variants.length > 0 && (
+                  <Text style={styles.variantName}>
+                    {product.variants.find(
+                      (variant) =>
+                        variant.id ===
+                        (selectedVariants[product.id] ?? product.variants[0]?.id)
+                    )?.name ?? "Choose a color"}
+                  </Text>
+                )}
 
-                <TouchableOpacity style={styles.addButton} onPress={() => handleAddToCart(product)}>
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => handleAddToCart(product)}
+                  disabled={
+                    (product.variants.find(
+                      (variant) => variant.id === selectedVariants[product.id]
+                    ) ?? product.variants[0])?.stockQuantity === 0 ||
+                    (!product.variants.length && product.stockQuantity === 0)
+                  }
+                >
                   <Text style={styles.addButtonText}>Add to cart</Text>
                 </TouchableOpacity>
               </View>
@@ -419,6 +463,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d9d4cc",
     borderRadius: 999,
+  },
+  swatchSelected: {
+    borderWidth: 3,
+    borderColor: "#8b5e3c",
+  },
+  swatchDisabled: {
+    opacity: 0.35,
+  },
+  variantName: {
+    marginTop: 7,
+    fontSize: 11,
+    color: "#6b7280",
   },
   addButton: {
     marginTop: 18,

@@ -6,6 +6,7 @@ export type CartItem = {
   priceCents: number;
   imageUrl: string;
   quantity: number;
+  variantId?: string;
   variantName?: string;
   colorHex?: string;
 };
@@ -35,12 +36,17 @@ export async function addToCart(item: CartItem) {
   const existingIndex = current.findIndex(
     (entry) =>
       entry.productId === item.productId &&
-      (entry.variantName ?? "") === (item.variantName ?? "")
+      (entry.variantId && item.variantId
+        ? entry.variantId === item.variantId
+        : (entry.variantName ?? "") === (item.variantName ?? ""))
   );
 
   if (existingIndex >= 0) {
     current[existingIndex] = {
       ...current[existingIndex],
+      variantId: item.variantId ?? current[existingIndex].variantId,
+      variantName: item.variantName ?? current[existingIndex].variantName,
+      colorHex: item.colorHex ?? current[existingIndex].colorHex,
       quantity: current[existingIndex].quantity + item.quantity,
     };
   } else {
