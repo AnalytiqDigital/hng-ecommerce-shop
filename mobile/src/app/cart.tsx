@@ -145,7 +145,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#f8f7f2",
+    backgroundColor: "#f6f3ec",
   },
   container: {
     padding: 24,
@@ -153,20 +153,20 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    backgroundColor: "#f8f7f2",
+    backgroundColor: "#f6f3ec",
     padding: 24,
     paddingTop: 60,
   },
   eyebrow: {
     fontSize: 10,
     letterSpacing: 1.8,
-    color: "#8b5e3c",
+    color: "#a76349",
   },
   title: {
     marginTop: 8,
     fontSize: 40,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   description: {
     marginTop: 16,
@@ -176,9 +176,10 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     marginTop: 22,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fffdf8",
     borderWidth: 1,
-    borderColor: "#dddcd6",
+    borderColor: "#e6e1d7",
+    borderRadius: 5,
     flexDirection: "row",
   },
   itemImage: {
@@ -193,20 +194,20 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   variant: {
     marginTop: 4,
     fontSize: 11,
     letterSpacing: 1,
     textTransform: "uppercase",
-    color: "#8b5e3c",
+    color: "#a76349",
   },
   itemPrice: {
     marginTop: 10,
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   quantityRow: {
     marginTop: 14,
@@ -220,18 +221,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    backgroundColor: "#f5f5f4",
+    borderColor: "#e0dbd0",
+    borderRadius: 3,
+    backgroundColor: "#fbf9f3",
   },
   qtyText: {
     fontSize: 20,
     lineHeight: 20,
-    color: "#111827",
+    color: "#293a2e",
   },
   qtyValue: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
     minWidth: 20,
     textAlign: "center",
   },
@@ -253,7 +255,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#dddcd6",
+    borderColor: "#e3ded3",
   },
   summaryLabel: {
     fontSize: 12,
@@ -271,7 +273,8 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#111827",
+    backgroundColor: "#344b3b",
+    borderRadius: 3,
   },
   checkoutText: {
     color: "#ffffff",
@@ -286,12 +289,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     height: 44,
     borderWidth: 1,
-    borderColor: "#111827",
+    borderColor: "#344b3b",
+    borderRadius: 3,
   },
   clearText: {
     fontSize: 10,
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "#111827",
+    color: "#344b3b",
   },
 });

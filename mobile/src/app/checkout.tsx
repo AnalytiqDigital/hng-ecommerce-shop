@@ -344,7 +344,7 @@ export default function CheckoutScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#f8f7f2",
+    backgroundColor: "#f6f3ec",
   },
   container: {
     padding: 24,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8f7f2",
+    backgroundColor: "#f6f3ec",
   },
   loadingText: {
     marginTop: 12,
@@ -370,13 +370,13 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     letterSpacing: 1.8,
-    color: "#8b5e3c",
+    color: "#a76349",
   },
   title: {
     marginTop: 8,
     fontSize: 34,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   emptyText: {
     marginTop: 12,
@@ -386,9 +386,10 @@ const styles = StyleSheet.create({
   },
   formSection: {
     marginTop: 24,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fffdf8",
     borderWidth: 1,
-    borderColor: "#dddcd6",
+    borderColor: "#e6e1d7",
+    borderRadius: 4,
     padding: 16,
   },
   sectionTitle: {
@@ -396,30 +397,32 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 1.6,
     textTransform: "uppercase",
-    color: "#8b5e3c",
+    color: "#a76349",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#d7d4cd",
-    backgroundColor: "#f9f9f8",
+    borderColor: "#e0dbd0",
+    borderRadius: 3,
+    backgroundColor: "#fbf9f3",
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 12,
     fontSize: 14,
-    color: "#111827",
+    color: "#293a2e",
   },
   summaryBox: {
     marginTop: 24,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fffdf8",
     borderWidth: 1,
-    borderColor: "#dddcd6",
+    borderColor: "#e6e1d7",
+    borderRadius: 4,
     padding: 16,
   },
   summaryTitle: {
     fontSize: 12,
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "#8b5e3c",
+    color: "#a76349",
   },
   summaryRow: {
     marginTop: 16,
@@ -430,7 +433,7 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   itemMeta: {
     marginTop: 4,
@@ -441,13 +444,13 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 13,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   totalRow: {
     marginTop: 18,
     paddingTop: 14,
     borderTopWidth: 1,
-    borderColor: "#dddcd6",
+    borderColor: "#e3ded3",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -461,11 +464,12 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   primaryButton: {
     marginTop: 24,
-    backgroundColor: "#1f2937",
+    backgroundColor: "#344b3b",
+    borderRadius: 3,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",

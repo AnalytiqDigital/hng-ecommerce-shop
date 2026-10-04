@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { useCallback, useMemo, useState } from "react";
 
@@ -55,6 +56,7 @@ function formatNaira(cents: number) {
 }
 
 export default function ShopScreen() {
+  const { width } = useWindowDimensions();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -74,6 +76,8 @@ export default function ShopScreen() {
 
     return products.filter((product) => product.category === selectedCategory);
   }, [products, selectedCategory]);
+  const columns = width >= 760 ? 3 : 2;
+  const cardWidth = (width - 40 - 12 * (columns - 1)) / columns;
 
   const loadProducts = useCallback(async () => {
     try {
@@ -172,10 +176,18 @@ export default function ShopScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
     >
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>THE COLLECTION</Text>
-        <Text style={styles.title}>Shop.</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.eyebrow}>THE FORM & FIELD EDIT</Text>
+            <Text style={styles.title}>Shop the good things.</Text>
+          </View>
+          <View style={styles.productCount}>
+            <Text style={styles.productCountValue}>{products.length.toString().padStart(2, "0")}</Text>
+            <Text style={styles.productCountLabel}>PIECES</Text>
+          </View>
+        </View>
         <Text style={styles.description}>
-          Useful objects, thoughtfully chosen for everyday living.
+          Thoughtful objects for slower mornings and better everyday rituals.
         </Text>
       </View>
 
@@ -209,18 +221,25 @@ export default function ShopScreen() {
       ) : (
         <View style={styles.grid}>
           {visibleProducts.map((product) => (
-            <View key={product.id} style={styles.card}>
-              <Image
-                accessibilityLabel={`${product.name} product thumbnail`}
-                alt={`${product.name} product thumbnail`}
-                source={{ uri: product.imageUrl }}
-                style={styles.image}
-                resizeMode="cover"
-              />
+            <View key={product.id} style={[styles.card, { width: cardWidth }]}>
+              <View style={styles.imageFrame}>
+                <Image
+                  accessibilityLabel={`${product.name} product thumbnail`}
+                  alt={`${product.name} product thumbnail`}
+                  source={{ uri: product.imageUrl }}
+                  style={[styles.image, { height: cardWidth * 1.08 }]}
+                  resizeMode="cover"
+                />
+                {product.featured && (
+                  <View style={styles.featuredTag}>
+                    <Text style={styles.featuredTagText}>THE EDIT</Text>
+                  </View>
+                )}
+              </View>
 
               <View style={styles.cardBody}>
                 <Text style={styles.category}>{product.category}</Text>
-                <Text style={styles.productName}>{product.name}</Text>
+                <Text style={styles.productName} numberOfLines={2}>{product.name}</Text>
 
                 <View style={styles.priceRow}>
                   <Text style={styles.price}>{formatNaira(product.priceCents)}</Text>
@@ -242,8 +261,6 @@ export default function ShopScreen() {
                     </Text>
                   );
                 })()}
-
-                {product.featured && <Text style={styles.featured}>FEATURED</Text>}
 
                 <View style={styles.variantRow}>
                   {(product.variants ?? []).map((variant) => (
@@ -310,7 +327,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f7f2",
   },
   container: {
-    padding: 24,
+    paddingHorizontal: 20,
+    paddingTop: 22,
     paddingBottom: 48,
   },
   center: {
@@ -354,42 +372,72 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
+    padding: 18,
+    backgroundColor: "#e9e9e1",
   },
   eyebrow: {
-    fontSize: 10,
+    fontSize: 8,
     letterSpacing: 1.8,
-    color: "#8b5e3c",
+    color: "#a76349",
   },
   title: {
-    marginTop: 8,
-    fontSize: 40,
+    maxWidth: 235,
+    marginTop: 7,
+    fontSize: 29,
+    lineHeight: 34,
+    fontWeight: "500",
+    color: "#293a2e",
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  productCount: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#f6f3ec",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  productCountValue: {
+    color: "#293a2e",
+    fontSize: 18,
     fontWeight: "600",
-    color: "#111827",
+  },
+  productCountLabel: {
+    marginTop: 2,
+    color: "#898678",
+    fontSize: 7,
+    letterSpacing: 1,
   },
   description: {
+    maxWidth: 300,
     marginTop: 10,
-    fontSize: 14,
-    lineHeight: 22,
-    color: "#6b7280",
+    fontSize: 12,
+    lineHeight: 19,
+    color: "#62675e",
   },
   filterRow: {
-    paddingBottom: 18,
-    gap: 10,
+    paddingBottom: 17,
+    gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#dddcd6",
-    backgroundColor: "#f3f1ea",
+    borderColor: "#ded9ce",
+    backgroundColor: "#fffdf8",
   },
   filterChipActive: {
-    backgroundColor: "#111827",
-    borderColor: "#111827",
+    backgroundColor: "#344b3b",
+    borderColor: "#344b3b",
   },
   filterLabel: {
-    fontSize: 10,
-    letterSpacing: 1.2,
+    fontSize: 8,
+    letterSpacing: 0.8,
     textTransform: "uppercase",
     color: "#111827",
   },
@@ -397,32 +445,54 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
   grid: {
-    gap: 18,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
   },
   card: {
-    backgroundColor: "#ffffff",
+    overflow: "hidden",
+    backgroundColor: "#fffdf8",
     borderWidth: 1,
-    borderColor: "#dddcd6",
+    borderColor: "#e7e2d8",
+    borderRadius: 5,
+  },
+  imageFrame: {
+    position: "relative",
+    backgroundColor: "#e9e5db",
   },
   image: {
     width: "100%",
-    height: 230,
     backgroundColor: "#ebe9e1",
   },
+  featuredTag: {
+    position: "absolute",
+    left: 8,
+    top: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    backgroundColor: "#f6f3ec",
+  },
+  featuredTagText: {
+    color: "#465747",
+    fontSize: 7,
+    letterSpacing: 1,
+  },
   cardBody: {
-    padding: 16,
+    padding: 10,
   },
   category: {
-    fontSize: 9,
-    letterSpacing: 1.5,
+    fontSize: 7,
+    letterSpacing: 1.2,
     textTransform: "uppercase",
     color: "#8b5e3c",
   },
   productName: {
-    marginTop: 7,
-    fontSize: 19,
+    minHeight: 34,
+    marginTop: 5,
+    fontSize: 13,
+    lineHeight: 17,
     fontWeight: "600",
-    color: "#111827",
+    color: "#293a2e",
   },
   priceRow: {
     marginTop: 8,
@@ -431,19 +501,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   price: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "600",
     color: "#111827",
   },
   compareAtPrice: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#9ca3af",
     textDecorationLine: "line-through",
   },
   stock: {
-    marginTop: 7,
-    fontSize: 12,
-    color: "#6b7280",
+    marginTop: 5,
+    fontSize: 9,
+    color: "#7b7d72",
   },
   featured: {
     marginTop: 10,
@@ -453,13 +523,13 @@ const styles = StyleSheet.create({
     color: "#8b5e3c",
   },
   variantRow: {
-    marginTop: 12,
+    marginTop: 10,
     flexDirection: "row",
     gap: 8,
   },
   swatch: {
-    width: 16,
-    height: 16,
+    width: 20,
+    height: 20,
     borderWidth: 1,
     borderColor: "#d9d4cc",
     borderRadius: 999,
@@ -477,15 +547,15 @@ const styles = StyleSheet.create({
     color: "#6b7280",
   },
   addButton: {
-    marginTop: 18,
-    height: 44,
+    marginTop: 12,
+    height: 38,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#111827",
+    backgroundColor: "#344b3b",
   },
   addButtonText: {
     color: "#ffffff",
-    fontSize: 11,
+    fontSize: 8,
     fontWeight: "600",
     letterSpacing: 1.1,
     textTransform: "uppercase",

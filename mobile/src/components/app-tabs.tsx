@@ -5,20 +5,20 @@ export default function AppTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#111827",
-        tabBarInactiveTintColor: "#6b7280",
+        tabBarActiveTintColor: "#344b3b",
+        tabBarInactiveTintColor: "#8b8a7e",
         tabBarStyle: {
-          backgroundColor: "#ffffff",
-          borderTopColor: "#dddcd6",
+          backgroundColor: "#fffdf8",
+          borderTopColor: "#e3ded3",
           borderTopWidth: 1,
           height: 72,
           paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: "600",
-          letterSpacing: 1.2,
+          letterSpacing: 1,
           textTransform: "uppercase",
         },
       }}

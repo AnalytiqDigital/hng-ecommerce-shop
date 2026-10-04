@@ -1,56 +1,43 @@
-# Welcome to your Expo app 👋
+# Form & Field Android app
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The app uses Expo Router and connects to the live store API. The Android APK can be generated with EAS Build; Expo Go is only for development previews.
 
-## Get started
+## Build an installable APK
 
-1. Install dependencies
+From the `mobile` directory:
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+npx eas-cli@latest login
+npx eas-cli@latest init
+npm run build:android:apk
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Sign in with the Expo account that should own the app. The `init` command links this app to that Expo account and records its project ID in `app.json`. On the first build, allow EAS to create and manage Android signing credentials.
 
-### Other setup steps
+Before building, add these public app settings in the Expo dashboard under **Project settings → Environment variables** for both the `preview` and `production` environments:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+- `EXPO_PUBLIC_SUPABASE_URL`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- `EXPO_PUBLIC_API_BASE_URL` (use `https://hng-ecommerce-shop.vercel.app`)
 
-## Learn more
+The Supabase URL and anonymous key are client-side values. Never add the Supabase service-role key, database URL, or Paystack secret key to the mobile app.
 
-To learn more about developing your project with Expo, look at the following resources:
+When the cloud build completes, open its link and download the `.apk` artifact. Transfer it to an Android phone and open it to install. Android may ask you to allow installs from that browser or file manager. The `preview` build profile is configured for direct APK installation; `production` creates an Android App Bundle for a store release.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Publish the APK from the store website
 
-## Join the community
+The storefront `/download` page reads the server-side `ANDROID_APK_URL` environment variable. To publish the APK:
 
-Join our community of developers creating universal apps.
+1. Create a GitHub Release for the tested version.
+2. Attach the EAS `.apk` file using the filename `form-field-android.apk`.
+3. In Vercel, add `ANDROID_APK_URL` for Production with this value:
+   `https://github.com/AnalytiqDigital/hng-ecommerce-shop/releases/latest/download/form-field-android.apk`
+4. Redeploy the storefront. The download button will become available on the site.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Keep the release APK signed with the same EAS Android credentials for later updates to install over the existing app.
+
+## App configuration
+
+The app uses the public Supabase URL and anonymous key from `mobile/.env.local` when running locally, and `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` in the EAS `preview` and `production` environments when building. These are client-side configuration values; never put service-role keys, database passwords, or Paystack secret keys in Expo public variables.
+
+`EXPO_PUBLIC_API_BASE_URL` is optional; without it the app uses the deployed storefront API.
