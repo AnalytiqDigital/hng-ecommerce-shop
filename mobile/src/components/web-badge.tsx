@@ -1,0 +1,42 @@
+import { version } from 'expo/package.json';
+import { Image } from 'expo-image';
+import { StyleSheet, useColorScheme } from 'react-native';
+
+import expoBadge from '@/assets/images/expo-badge.png';
+import expoBadgeWhite from '@/assets/images/expo-badge-white.png';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
+
+export function WebBadge() {
+  const scheme = useColorScheme();
+
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText type="code" themeColor="textSecondary" style={styles.versionText}>
+        v{version}
+      </ThemedText>
+      <Image
+        accessibilityLabel="Expo badge"
+        alt="Expo badge"
+        source={scheme === 'dark' ? expoBadgeWhite : expoBadge}
+        style={styles.badgeImage}
+      />
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    padding: Spacing.five,
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  versionText: {
+    textAlign: 'center',
+  },
+  badgeImage: {
+    width: 123,
+    aspectRatio: 123 / 24,
+  },
+});

@@ -54,59 +54,63 @@ export default function LoginPage() {
   }
 
   async function handleEmailAuth(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  event.preventDefault();
 
-    setLoading(true);
-    setError("");
-    setMessage("");
+  setLoading(true);
+  setError("");
+  setMessage("");
 
-    try {
-      const supabase = createSupabaseBrowserClient();
+  const next = getNextPath();
 
-      if (!email.trim() || !password) {
-        throw new Error("Please enter your email and password.");
+  console.log("[LOGIN] Redirect destination:", next);
+
+  try {
+    const supabase = createSupabaseBrowserClient();
+
+    if (!email.trim() || !password) {
+      throw new Error("Please enter your email and password.");
+    }
+
+    if (mode === "signup") {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      });
+
+      if (authError) throw authError;
+
+      if (data.session) {
+        window.location.href = next;
+        return;
       }
 
-      if (mode === "signup") {
-        const { data, error: authError } = await supabase.auth.signUp({
+      setMessage(
+        "Account created. Please check your email to confirm your account before signing in."
+      );
+    } else {
+      const { error: authError } =
+        await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
         });
 
-        if (authError) throw authError;
+      if (authError) throw authError;
 
-        if (data.session) {
-          window.location.href = getNextPath();
-          return;
-        }
-
-        setMessage(
-          "Account created. Please check your email to confirm your account before signing in."
-        );
-      } else {
-        const { error: authError } =
-          await supabase.auth.signInWithPassword({
-            email: email.trim(),
-            password,
-          });
-
-        if (authError) throw authError;
-
-        window.location.href = getNextPath();
-        return;
-      }
-    } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : mode === "signup"
-            ? "Unable to create your account."
-            : "Unable to sign in."
-      );
-    } finally {
-      setLoading(false);
+      window.location.href = next;
+      return;
     }
+  } catch (cause) {
+    setError(
+      cause instanceof Error
+        ? cause.message
+        : mode === "signup"
+          ? "Unable to create your account."
+          : "Unable to sign in."
+    );
+  } finally {
+    setLoading(false);
   }
+}
 
   function switchMode() {
     setMode((current) => (current === "signin" ? "signup" : "signin"));
