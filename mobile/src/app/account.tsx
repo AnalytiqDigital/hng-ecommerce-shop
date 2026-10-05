@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
@@ -36,6 +38,7 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
   const [notice, setNotice] = useState("");
   const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] =
     useState(false);
+  const processedOAuthCodes = useRef(new Set<string>());
 
   useEffect(() => {
     let mounted = true;
@@ -153,6 +156,91 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
     }
   }
 
+  async function handleGoogleSignIn() {
+    setErrorMessage("");
+    setNotice("");
+    setSubmitting(true);
+
+    try {
+      const redirectUrl = Linking.createURL("account");
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.url) {
+        throw new Error("Supabase did not return a Google sign-in URL.");
+      }
+
+      const result = await WebBrowser.openAuthSessionAsync(
+        data.url,
+        redirectUrl
+      );
+
+      if (result.type === "success") {
+        await handleOAuthRedirect(result.url);
+      } else if (result.type === "cancel") {
+        setNotice("Google sign-in was cancelled.");
+      }
+    } catch (cause) {
+      setErrorMessage(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to start Google sign-in right now."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const handleOAuthRedirect = useCallback(
+    async (url?: string | null) => {
+      if (!url) {
+        return;
+      }
+
+      const parsed = Linking.parse(url);
+      const getSingleStringValue = (value: string | string[] | undefined) =>
+        Array.isArray(value) ? value[0] : value;
+      const code = getSingleStringValue(parsed.queryParams?.code);
+      const error = getSingleStringValue(parsed.queryParams?.error);
+      const errorDescription = getSingleStringValue(
+        parsed.queryParams?.error_description
+      );
+
+      if (error || errorDescription) {
+        setErrorMessage(
+          errorDescription ?? error ?? "Google sign-in could not be completed."
+        );
+        return;
+      }
+
+      if (!code || processedOAuthCodes.current.has(code)) {
+        return;
+      }
+
+      processedOAuthCodes.current.add(code);
+      try {
+        const { error: exchangeError } =
+          await client.auth.exchangeCodeForSession(code);
+        if (exchangeError) throw exchangeError;
+        setNotice("Google sign-in complete. Welcome back!");
+      } catch (cause) {
+        processedOAuthCodes.current.delete(code);
+        setErrorMessage(
+          cause instanceof Error
+            ? cause.message
+            : "Unable to finish Google sign-in."
+        );
+      }
+    },
+    [client]
+  );
+
   async function handleSignOut() {
     setErrorMessage("");
     try {
@@ -164,6 +252,18 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
       );
     }
   }
+
+  useEffect(() => {
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      void handleOAuthRedirect(url);
+    });
+
+    void Linking.getInitialURL().then((url) => {
+      void handleOAuthRedirect(url);
+    });
+
+    return () => subscription.remove();
+  }, [handleOAuthRedirect]);
 
   if (loading) {
     return (
@@ -267,6 +367,23 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
 
           {notice ? <Text style={styles.noticeBox}>{notice}</Text> : null}
           {errorMessage ? <Text style={styles.errorBox}>{errorMessage}</Text> : null}
+
+          <TouchableOpacity
+            style={[styles.googleButton, submitting && styles.buttonDisabled]}
+            onPress={() => void handleGoogleSignIn()}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ActivityIndicator color="#344b3b" />
+            ) : (
+              <Text style={styles.googleButtonText}>CONTINUE WITH GOOGLE</Text>
+            )}
+          </TouchableOpacity>
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>OR USE EMAIL</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
           <Text style={styles.label}>Email address</Text>
           <TextInput
@@ -512,6 +629,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#344b3b",
+  },
+  googleButton: {
+    minHeight: 49,
+    marginTop: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#344b3b",
+  },
+  googleButtonText: {
+    color: "#344b3b",
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+  },
+  divider: {
+    marginTop: 16,
+    marginBottom: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#e8e3d9",
+  },
+  dividerText: {
+    color: "#979488",
+    fontSize: 8,
+    letterSpacing: 1,
   },
   buttonDisabled: {
     opacity: 0.65,
