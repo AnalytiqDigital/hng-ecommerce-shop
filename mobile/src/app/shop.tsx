@@ -1,4 +1,4 @@
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
@@ -57,17 +57,24 @@ function formatNaira(cents: number) {
 
 export default function ShopScreen() {
   const { width } = useWindowDimensions();
+  const { category: routeCategory } = useLocalSearchParams<{ category?: string }>();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [manualCategory, setManualCategory] = useState<string | null>(null);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const categories = useMemo(() => {
     const unique = new Set(products.map((product) => product.category));
     return ["All", ...Array.from(unique)];
   }, [products]);
+
+  const selectedCategory =
+    manualCategory ??
+    (typeof routeCategory === "string" && categories.includes(routeCategory)
+      ? routeCategory
+      : "All");
 
   const visibleProducts = useMemo(() => {
     if (selectedCategory === "All") {
@@ -203,7 +210,7 @@ export default function ShopScreen() {
             <TouchableOpacity
               key={category}
               style={[styles.filterChip, isSelected && styles.filterChipActive]}
-              onPress={() => setSelectedCategory(category)}
+              onPress={() => setManualCategory(category)}
             >
               <Text style={[styles.filterLabel, isSelected && styles.filterLabelActive]}>
                 {category}

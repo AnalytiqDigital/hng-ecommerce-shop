@@ -5,7 +5,7 @@ import { Dimensions, StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import expoLogo from '@/assets/images/expo-logo.png';
+import formFieldMark from '@/assets/images/form-field-mark.png';
 import glowLogo from '@/assets/images/logo-glow.png';
 
 const INITIAL_SCALE_FACTOR = Dimensions.get('screen').height / 90;
@@ -43,7 +43,7 @@ export function AnimatedSplashOverlay() {
       accessibilityRole="image"
       accessible={true}
       style={styles.image}
-      source={expoLogo}
+      source={formFieldMark}
     />
   );
 
@@ -129,7 +129,7 @@ export function AnimatedIcon() {
           accessibilityRole="image"
           accessible={true}
           style={styles.image}
-          source={expoLogo}
+          source={formFieldMark}
         />
       </Animated.View>
     </View>
@@ -159,14 +159,14 @@ const styles = StyleSheet.create({
   },
   background: {
     borderRadius: 40,
-    experimental_backgroundImage: `linear-gradient(180deg, #3C9FFE, #0274DF)`,
+    backgroundColor: '#344B3B',
     width: 128,
     height: 128,
     position: 'absolute',
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
+    backgroundColor: '#344B3B',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,

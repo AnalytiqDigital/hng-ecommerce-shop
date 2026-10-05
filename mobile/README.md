@@ -22,7 +22,19 @@ Before building, add these public app settings in the Expo dashboard under **Pro
 
 The Supabase URL and anonymous key are client-side values. Never add the Supabase service-role key, database URL, or Paystack secret key to the mobile app.
 
-When the cloud build completes, open its link and download the `.apk` artifact. Transfer it to an Android phone and open it to install. Android may ask you to allow installs from that browser or file manager. The `preview` build profile is configured for direct APK installation; `production` creates an Android App Bundle for a store release.
+Run the build command after configuring the variables:
+
+```powershell
+npm run build:android:apk
+```
+
+No Expo workflow needs to be created for this. If EAS offers to configure a GitHub workflow, skip that option; it is for automatic CI builds and is not needed to create an APK manually.
+
+When the cloud build completes, open its link **on the Android phone** and download/install the `.apk`. If you open the link on a PC, Windows cannot install an Android APK; download it on the computer only if you plan to transfer it to the phone. Android may ask you to allow installs from the browser or file manager. The `preview` build profile is configured for direct APK installation; `production` creates an Android App Bundle for a store release.
+
+Expo Go and the installed APK are separate builds. Expo Go uses values from `mobile/.env.local` while developing; EAS does not upload that local file. The standalone APK therefore needs the EAS environment variables above. If those variables are missing, the account screen explains that setup is needed instead of crashing, and sign-in will not work until you build again with the variables configured.
+
+Signing in to Expo Go/EAS is only for app development and building. To log in as a shopper, use your Form & Field website account in the app's **Account** tab. This is a separate account from Expo.
 
 ## Publish the APK from the store website
 

@@ -21,11 +21,20 @@ export default function AppTabs() {
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
+          <TabTrigger name="index" href="/" asChild>
             <TabButton>Home</TabButton>
+          </TabTrigger>
+          <TabTrigger name="shop" href="/shop" asChild>
+            <TabButton>Shop</TabButton>
           </TabTrigger>
           <TabTrigger name="explore" href="/explore" asChild>
             <TabButton>Explore</TabButton>
+          </TabTrigger>
+          <TabTrigger name="cart" href="/cart" asChild>
+            <TabButton>Cart</TabButton>
+          </TabTrigger>
+          <TabTrigger name="account" href="/account" asChild>
+            <TabButton>Account</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -55,14 +64,14 @@ export function CustomTabList(props: TabListProps) {
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
+          FORM & FIELD
         </ThemedText>
 
         {props.children}
 
-        <ExternalLink href="https://docs.expo.dev" asChild>
+        <ExternalLink href="https://hng-ecommerce-shop.vercel.app" asChild>
           <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
+            <ThemedText type="link">Store</ThemedText>
             <SymbolView
               tintColor={colors.text}
               name={{ ios: 'arrow.up.right.square', web: 'link' }}

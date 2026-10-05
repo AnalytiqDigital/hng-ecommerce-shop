@@ -10,12 +10,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { supabase } from "@/lib/supabase";
 
 type AuthMode = "sign-in" | "create-account";
 
 export default function AccountScreen() {
+  if (!supabase) {
+    return <AccountSetupRequired />;
+  }
+
+  return <ConfiguredAccountScreen client={supabase} />;
+}
+
+function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
+  const auth = client.auth;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
@@ -33,7 +43,7 @@ export default function AccountScreen() {
         const {
           data: { session },
           error,
-        } = await supabase.auth.getSession();
+        } = await auth.getSession();
         if (error) throw error;
         if (mounted) setUserEmail(session?.user.email ?? null);
       } catch (cause) {
@@ -50,7 +60,7 @@ export default function AccountScreen() {
     void loadSession();
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = auth.onAuthStateChange((_event, session) => {
       if (mounted) setUserEmail(session?.user.email ?? null);
     });
 
@@ -58,7 +68,7 @@ export default function AccountScreen() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [auth]);
 
   async function handleSubmit() {
     setErrorMessage("");
@@ -77,13 +87,13 @@ export default function AccountScreen() {
     setSubmitting(true);
     try {
       if (mode === "sign-in") {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await client.auth.signInWithPassword({
           email: normalizedEmail,
           password,
         });
         if (error) throw error;
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await client.auth.signUp({
           email: normalizedEmail,
           password,
         });
@@ -106,7 +116,7 @@ export default function AccountScreen() {
   async function handleSignOut() {
     setErrorMessage("");
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await client.auth.signOut();
       if (error) throw error;
     } catch (cause) {
       setErrorMessage(
@@ -274,6 +284,20 @@ export default function AccountScreen() {
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>
+  );
+}
+
+function AccountSetupRequired() {
+  return (
+    <View style={styles.loadingScreen}>
+      <Text style={styles.eyebrow}>FORM & FIELD ACCOUNT</Text>
+      <Text style={styles.title}>Almost ready.</Text>
+      <Text style={styles.intro}>
+        Sign-in settings were not included in this app build. The app is still
+        available to browse; ask the app owner to configure Supabase in Expo
+        and rebuild the APK.
+      </Text>
+    </View>
   );
 }
 

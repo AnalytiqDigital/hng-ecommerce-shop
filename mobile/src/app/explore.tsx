@@ -1,185 +1,206 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from "expo-router";
+import {
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import tutorialWeb from '@/assets/images/tutorial-web.png';
-import reactLogo from '@/assets/images/react-logo.png';
-import { ExternalLink } from '@/components/external-link';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+const edits = [
+  {
+    category: "Home",
+    subtitle: "For the corners you come back to.",
+    image:
+      "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=85",
+    number: "01",
+  },
+  {
+    category: "Accessories",
+    subtitle: "Everyday companions, chosen well.",
+    image:
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=1000&q=85",
+    number: "02",
+  },
+  {
+    category: "Lighting",
+    subtitle: "A softer way to set the mood.",
+    image:
+      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1000&q=85",
+    number: "03",
+  },
+  {
+    category: "Clothing",
+    subtitle: "Easy layers for everyday living.",
+    image:
+      "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1000&q=85",
+    number: "04",
+  },
+];
 
-export default function TabTwoScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
-  const theme = useTheme();
-
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
-
+export default function ExploreScreen() {
   return (
     <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
+      style={styles.screen}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>A LITTLE INSPIRATION</Text>
+        <Text style={styles.title}>Explore the edit.</Text>
+        <Text style={styles.intro}>
+          Useful things, chosen with care. Find something that feels like you.
+        </Text>
+      </View>
 
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
+      <View style={styles.editList}>
+        {edits.map((edit) => (
+          <TouchableOpacity
+            key={edit.category}
+            accessibilityRole="button"
+            accessibilityLabel={`Explore ${edit.category}`}
+            activeOpacity={0.9}
+            onPress={() =>
+              router.push({
+                pathname: "/shop",
+                params: { category: edit.category },
+              })
+            }
+          >
+            <ImageBackground
+              source={{ uri: edit.image }}
+              style={styles.editCard}
+              imageStyle={styles.editImage}
+              resizeMode="cover"
+            >
+              <View style={styles.scrim} />
+              <Text style={styles.editNumber}>{edit.number} / 04</Text>
+              <View style={styles.editCopy}>
+                <Text style={styles.editSubtitle}>{edit.subtitle}</Text>
+                <View style={styles.editTitleRow}>
+                  <Text style={styles.editTitle}>{edit.category}</Text>
+                  <Text style={styles.editArrow}>↗</Text>
+                </View>
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
-              <Image
-                accessibilityLabel="Tutorial preview"
-                alt="Tutorial preview"
-                accessible={true}
-                source={tutorialWeb}
-                style={styles.imageTutorial}
-              />
-            </ThemedView>
-          </Collapsible>
-
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image accessibilityLabel="React logo" alt="React logo" accessible={true} source={reactLogo} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
+      <TouchableOpacity
+        style={styles.allButton}
+        onPress={() => router.push("/shop")}
+      >
+        <Text style={styles.allButtonText}>SEE THE FULL COLLECTION</Text>
+        <Text style={styles.allButtonArrow}>↗</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
+  screen: {
     flex: 1,
-  },
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    backgroundColor: "#f6f3ec",
   },
   container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 48,
   },
-  titleContainer: {
-    gap: Spacing.three,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
+  header: {
+    paddingHorizontal: 5,
+    paddingBottom: 20,
   },
-  centerText: {
-    textAlign: 'center',
+  eyebrow: {
+    color: "#a76349",
+    fontSize: 8,
+    letterSpacing: 1.8,
   },
-  pressed: {
-    opacity: 0.7,
+  title: {
+    marginTop: 8,
+    color: "#293a2e",
+    fontSize: 30,
+    fontWeight: "500",
   },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
+  intro: {
+    maxWidth: 300,
+    marginTop: 8,
+    color: "#74766d",
+    fontSize: 12,
+    lineHeight: 19,
   },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
+  editList: {
+    gap: 12,
   },
-  collapsibleContent: {
-    alignItems: 'center',
+  editCard: {
+    height: 184,
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    backgroundColor: "#77766d",
+    borderRadius: 4,
   },
-  imageTutorial: {
-    width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
+  editImage: {
+    borderRadius: 4,
   },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  scrim: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: "rgba(25, 31, 26, 0.35)",
+  },
+  editNumber: {
+    position: "absolute",
+    top: 13,
+    right: 14,
+    color: "rgba(255,253,248,0.8)",
+    fontSize: 8,
+    letterSpacing: 1.4,
+  },
+  editCopy: {
+    paddingHorizontal: 17,
+    paddingBottom: 16,
+  },
+  editSubtitle: {
+    color: "rgba(255,253,248,0.82)",
+    fontSize: 10,
+  },
+  editTitleRow: {
+    marginTop: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  editTitle: {
+    color: "#fffdf8",
+    fontSize: 25,
+    fontWeight: "500",
+  },
+  editArrow: {
+    color: "#fffdf8",
+    fontSize: 19,
+  },
+  allButton: {
+    minHeight: 49,
+    marginTop: 17,
+    paddingHorizontal: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#344b3b",
+    borderRadius: 3,
+  },
+  allButtonText: {
+    color: "#fffdf8",
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+  },
+  allButtonArrow: {
+    color: "#fffdf8",
+    fontSize: 18,
   },
 });

@@ -1,16 +1,10 @@
 import "react-native-url-polyfill/auto";
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Supabase is not configured. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to mobile/.env.local."
-  );
-}
 
 const SecureStoreAdapter = {
   getItem: (key: string) => SecureStore.getItemAsync(key),
@@ -22,15 +16,14 @@ const SecureStoreAdapter = {
     SecureStore.deleteItemAsync(key),
 };
 
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey,
-  {
+export const supabase: SupabaseClient | null =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       storage: SecureStoreAdapter,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
     },
-  }
-);
+      })
+    : null;

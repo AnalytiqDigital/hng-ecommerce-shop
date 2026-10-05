@@ -30,9 +30,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#344B3B",
+          "image": "./assets/images/form-field-mark.png",
+          "imageWidth": 108
         }
       ],
       "expo-secure-store",
@@ -41,6 +41,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7b8900b7-a675-4434-90b4-66e55e6ee9fe"
+      }
     }
   }
 }
