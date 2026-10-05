@@ -36,6 +36,12 @@ Expo Go and the installed APK are separate builds. Expo Go uses values from `mob
 
 Signing in to Expo Go/EAS is only for app development and building. To log in as a shopper, use your Form & Field website account in the app's **Account** tab. This is a separate account from Expo.
 
+### If the account confirmation email does not arrive
+
+The app asks Supabase Auth to send the confirmation email; email delivery is configured in Supabase, not in the APK. In the Supabase dashboard, check **Authentication → Logs** for the signup/email attempt and configure a verified sender under **Authentication → Emails → SMTP Settings**. The built-in email sender is intended for limited testing and can restrict delivery or be rate-limited.
+
+Also set **Authentication → URL Configuration → Site URL** to `https://hng-ecommerce-shop.vercel.app`. Check the sender provider's delivery logs and the recipient's spam folder. In the app, enter the same email address and use **Resend confirmation email**. After confirming, return to the app and sign in. Rebuild/reinstall the APK if it does not show the resend option.
+
 ## Publish the APK from the store website
 
 The storefront `/download` page reads the server-side `ANDROID_APK_URL` environment variable. To publish the APK:

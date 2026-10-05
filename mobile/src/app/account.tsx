@@ -34,6 +34,8 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
   const [mode, setMode] = useState<AuthMode>("sign-in");
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
+  const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] =
+    useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -91,6 +93,11 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
           email: normalizedEmail,
           password,
         });
+        if (error?.code === "email_not_confirmed") {
+          setAwaitingEmailConfirmation(true);
+          setErrorMessage("Confirm your email address before signing in.");
+          return;
+        }
         if (error) throw error;
       } else {
         const { data, error } = await client.auth.signUp({
@@ -99,7 +106,10 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
         });
         if (error) throw error;
         if (!data.session) {
-          setNotice("Check your email to confirm your account, then sign in here.");
+          setAwaitingEmailConfirmation(true);
+          setNotice(
+            "Your account was created. Check your inbox and spam folder for a confirmation email. Confirm it before signing in."
+          );
           setMode("sign-in");
           setPassword("");
         }
@@ -107,6 +117,36 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
     } catch (cause) {
       setErrorMessage(
         cause instanceof Error ? cause.message : "We could not complete that request."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleResendConfirmation() {
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setErrorMessage("Enter your email address first.");
+      return;
+    }
+
+    setErrorMessage("");
+    setNotice("");
+    setSubmitting(true);
+    try {
+      const { error } = await client.auth.resend({
+        type: "signup",
+        email: normalizedEmail,
+      });
+      if (error) throw error;
+      setNotice(
+        "If this account still needs confirmation, a new email has been sent. Check your inbox and spam folder."
+      );
+    } catch (cause) {
+      setErrorMessage(
+        cause instanceof Error
+          ? cause.message
+          : "Unable to resend the confirmation email."
       );
     } finally {
       setSubmitting(false);
@@ -231,7 +271,10 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
           <Text style={styles.label}>Email address</Text>
           <TextInput
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              setAwaitingEmailConfirmation(false);
+            }}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
@@ -276,6 +319,17 @@ function ConfiguredAccountScreen({ client }: { client: SupabaseClient }) {
               </Text>
             )}
           </TouchableOpacity>
+          {awaitingEmailConfirmation && mode === "sign-in" ? (
+            <TouchableOpacity
+              style={styles.resendButton}
+              onPress={() => void handleResendConfirmation()}
+              disabled={submitting}
+            >
+              <Text style={styles.resendButtonText}>
+                RESEND CONFIRMATION EMAIL
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           <Text style={styles.secureNote}>Your account is protected by secure sign-in.</Text>
         </View>
 
@@ -467,6 +521,20 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "700",
     letterSpacing: 1.1,
+  },
+  resendButton: {
+    minHeight: 44,
+    marginTop: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#344b3b",
+  },
+  resendButtonText: {
+    color: "#344b3b",
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 1,
   },
   secureNote: {
     marginTop: 12,
