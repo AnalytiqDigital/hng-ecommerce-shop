@@ -138,18 +138,22 @@ export default function ShopScreen() {
       return;
     }
 
-    await addToCart({
-      productId: product.id,
-      name: product.name,
-      priceCents: product.priceCents,
-      imageUrl: variant?.imageUrl || product.imageUrl,
-      quantity: 1,
-      variantId: variant?.id,
-      variantName: variant?.name,
-      colorHex: variant?.colorHex,
-    });
-
-    Alert.alert("Added to cart", `${product.name} was added to your cart.`);
+    try {
+      await addToCart({
+        productId: product.id,
+        name: product.name,
+        priceCents: product.priceCents,
+        imageUrl: variant?.imageUrl || product.imageUrl,
+        stockQuantity: variant?.stockQuantity ?? product.stockQuantity,
+        quantity: 1,
+        variantId: variant?.id,
+        variantName: variant?.name,
+        colorHex: variant?.colorHex,
+      });
+      Alert.alert("Added to cart", `${product.name} was added to your cart.`);
+    } catch (cause) {
+      Alert.alert("Cart not saved", cause instanceof Error ? cause.message : "Unable to add this item to your cart.");
+    }
   }
 
   if (loading) {

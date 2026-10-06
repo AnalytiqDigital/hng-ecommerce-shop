@@ -15,7 +15,7 @@ import {
 import * as WebBrowser from "expo-web-browser";
 import * as Linking from "expo-linking";
 
-import { getCart, getCartSubtotal, type CartItem } from "@/lib/cart";
+import { getCart, getCartRequestHeaders, getCartSubtotal, type CartItem } from "@/lib/cart";
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL || "https://hng-ecommerce-shop.vercel.app";
@@ -51,9 +51,14 @@ export default function CheckoutScreen() {
   const subtotal = getCartSubtotal(items);
 
   const loadCart = useCallback(async () => {
-    const cart = await getCart();
-    setItems(cart);
-    setLoading(false);
+    try {
+      const cart = await getCart();
+      setItems(cart);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load your cart.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -146,6 +151,7 @@ export default function CheckoutScreen() {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          ...await getCartRequestHeaders(),
         },
         body: JSON.stringify(payload),
       });
@@ -201,7 +207,7 @@ export default function CheckoutScreen() {
       <View style={styles.emptyState}>
         <Text style={styles.eyebrow}>CHECKOUT</Text>
         <Text style={styles.title}>Your cart is empty.</Text>
-        <Text style={styles.emptyText}>Add a few pieces before starting checkout.</Text>
+        <Text style={styles.emptyText}>{error || "Add a few pieces before starting checkout."}</Text>
 
         <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace("/shop")}>
           <Text style={styles.primaryButtonText}>Back to shop</Text>

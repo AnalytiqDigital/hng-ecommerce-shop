@@ -109,6 +109,7 @@ export const carts = pgTable("carts", {
   sessionId: text("session_id").unique(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
+  uniqueIndex("carts_user_unique").on(table.userId),
   pgPolicy("carts_owner_read", { for: "select", to: "authenticated", using: sql`${table.userId} = auth.uid()` }),
 ]).enableRLS();
 
@@ -116,9 +117,10 @@ export const cartItems = pgTable("cart_items", {
   id: uuid("id").defaultRandom().primaryKey(),
   cartId: uuid("cart_id").notNull().references(() => carts.id, { onDelete: "cascade" }),
   productId: uuid("product_id").notNull().references(() => products.id),
+  variantId: uuid("variant_id").references(() => productVariants.id, { onDelete: "set null" }),
   quantity: integer("quantity").notNull().default(1),
 }, (table) => [
-  uniqueIndex("cart_product_unique").on(table.cartId, table.productId),
+  uniqueIndex("cart_product_variant_unique").on(table.cartId, table.productId, table.variantId),
   pgPolicy("cart_items_owner_read", { for: "select", to: "authenticated", using: sql`exists (select 1 from ${carts} where ${carts.id} = ${table.cartId} and ${carts.userId} = auth.uid())` }),
 ]).enableRLS();
 

@@ -8,6 +8,8 @@ import {
   payments,
   productVariants,
   products,
+  cartItems,
+  carts,
 } from "@/lib/db/schema";
 import {
   isMatchingSuccessfulPayment,
@@ -229,6 +231,21 @@ export async function POST(request: Request) {
             updatedAt: new Date(),
           })
           .where(eq(orders.id, order.id));
+
+        if (order.userId) {
+          const [cart] = await tx
+            .select({ id: carts.id })
+            .from(carts)
+            .where(eq(carts.userId, order.userId))
+            .for("update");
+          if (cart) {
+            await tx.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+            await tx
+              .update(carts)
+              .set({ updatedAt: new Date() })
+              .where(eq(carts.id, cart.id));
+          }
+        }
       }
 
       return {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { calculateSubtotal } from "@/lib/cart";
-import { getCurrentUser } from "@/lib/supabase/server";
+import { getRequestUser } from "@/lib/supabase/request-user";
 import { orderItems, orders, payments, productVariants, products } from "@/lib/db/schema";
 import { getStoreSettings } from "@/lib/store-settings.server";
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   try {
     const db = getDb();
     const storeSettings = await getStoreSettings();
-    const user = await getCurrentUser();
+    const user = await getRequestUser(request);
     const ids = [...new Set(parsed.data.items.map((item) => item.productId))].sort();
     const lineMap = new Map<string, { productId: string; variantId?: string; quantity: number }>();
     for (const item of parsed.data.items) {

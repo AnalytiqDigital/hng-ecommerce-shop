@@ -24,10 +24,16 @@ export default function CartScreen() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const loadCart = useCallback(async () => {
-    const cart = await getCart();
-    setItems(cart);
+    try {
+      const cart = await getCart();
+      setItems(cart);
+      setError("");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load your cart.");
+    }
   }, []);
 
   useFocusEffect(
@@ -37,13 +43,21 @@ export default function CartScreen() {
   );
 
   async function handleQuantityChange(productId: string, variantName: string | undefined, delta: number) {
-    const next = await updateQuantity(productId, variantName, delta);
-    setItems(next);
+    try {
+      const next = await updateQuantity(productId, variantName, delta);
+      setItems(next);
+    } catch (cause) {
+      Alert.alert("Cart not updated", cause instanceof Error ? cause.message : "Unable to update your cart.");
+    }
   }
 
   async function handleRemove(productId: string, variantName?: string) {
-    const next = await removeFromCart(productId, variantName);
-    setItems(next);
+    try {
+      const next = await removeFromCart(productId, variantName);
+      setItems(next);
+    } catch (cause) {
+      Alert.alert("Item not removed", cause instanceof Error ? cause.message : "Unable to update your cart.");
+    }
   }
 
   async function handleClearCart() {
@@ -54,9 +68,14 @@ export default function CartScreen() {
         style: "destructive",
         onPress: async () => {
           setLoading(true);
-          await clearCart();
-          setItems([]);
-          setLoading(false);
+          try {
+            await clearCart();
+            setItems([]);
+          } catch (cause) {
+            Alert.alert("Cart not cleared", cause instanceof Error ? cause.message : "Unable to clear your cart.");
+          } finally {
+            setLoading(false);
+          }
         },
       },
     ]);
@@ -69,7 +88,7 @@ export default function CartScreen() {
       <View style={styles.emptyContainer}>
         <Text style={styles.eyebrow}>YOUR CART</Text>
         <Text style={styles.title}>Cart.</Text>
-        <Text style={styles.description}>Your cart is empty. Add a few considered pieces and they’ll appear here.</Text>
+        <Text style={styles.description}>{error || "Your cart is empty. Add a few considered pieces and they’ll appear here."}</Text>
       </View>
     );
   }
